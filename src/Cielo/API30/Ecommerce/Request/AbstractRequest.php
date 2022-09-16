@@ -12,16 +12,15 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractRequest
 {
-
     private $merchant;
     private $logger;
 
-	/**
-	 * AbstractSaleRequest constructor.
-	 *
-	 * @param Merchant $merchant
-	 * @param LoggerInterface|null $logger
-	 */
+    /**
+     * AbstractSaleRequest constructor.
+     *
+     * @param Merchant $merchant
+     * @param LoggerInterface|null $logger
+     */
     public function __construct(Merchant $merchant, LoggerInterface $logger = null)
     {
         $this->merchant = $merchant;
@@ -33,7 +32,7 @@ abstract class AbstractRequest
      *
      * @return mixed
      */
-    public abstract function execute($param);
+    abstract public function execute($param);
 
     /**
      * @param                        $method
@@ -83,7 +82,9 @@ abstract class AbstractRequest
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
         if ($this->logger !== null) {
-            $this->logger->debug('Requisição', [
+            $this->logger->debug(
+                'Requisição',
+                [
                     sprintf('%s %s', $method, $url),
                     $headers,
                     json_decode(preg_replace('/("cardnumber"):"([^"]{6})[^"]+([^"]{4})"/i', '$1:"$2******$3"', json_encode($content)))
@@ -141,6 +142,12 @@ abstract class AbstractRequest
                     $exception->setCieloError($cieloError);
                 }
 
+                if ($exception === null) {
+                    $cieloError = new CieloError($response, null);
+                    $exception  = new CieloRequestException($response, null, null);
+                    $exception->setCieloError($cieloError);
+                }
+
                 throw $exception;
             case 404:
                 throw new CieloRequestException('Resource not found', 404, null);
@@ -156,5 +163,5 @@ abstract class AbstractRequest
      *
      * @return mixed
      */
-    protected abstract function unserialize($json);
+    abstract protected function unserialize($json);
 }
