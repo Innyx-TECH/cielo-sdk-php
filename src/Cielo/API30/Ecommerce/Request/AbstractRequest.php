@@ -3,6 +3,7 @@
 namespace Cielo\API30\Ecommerce\Request;
 
 use Cielo\API30\Merchant;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -135,6 +136,10 @@ abstract class AbstractRequest
             case 400:
                 $exception = null;
                 $response  = json_decode($responseBody);
+
+                if(is_string($response)){
+                    throw new Exception($response);
+                }
 
                 foreach ($response as $error) {
                     $cieloError = new CieloError($error->Message, $error->Code);
